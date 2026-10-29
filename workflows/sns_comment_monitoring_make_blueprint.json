@@ -1,0 +1,415 @@
+{
+  "name": "Semi_Project_02",
+  "flow": [
+    {
+      "id": 1,
+      "module": "google-email:triggerWatchNewEmails",
+      "version": 4,
+      "parameters": {
+        "from": "",
+        "size": {
+          "unit": "M",
+          "amount": null,
+          "criteria": "larger"
+        },
+        "limit": 10,
+        "folder": "INBOX",
+        "format": "full",
+        "subject": "",
+        "criteria": "all",
+        "labelIds": "",
+        "markSeen": false,
+        "filterType": "simpleSearch",
+        "__IMTCONN__": 0,
+        "excludeWords": "",
+        "includeWords": "",
+        "hasAttachment": false
+      },
+      "mapper": {},
+      "metadata": {
+        "designer": {
+          "x": 0,
+          "y": 0
+        }
+      }
+    },
+    {
+      "id": 7,
+      "module": "google-email:listEmailAttachments",
+      "version": 4,
+      "parameters": {
+        "__IMTCONN__": 0
+      },
+      "filter": {
+        "name": "[댓글관리]",
+        "conditions": [
+          [
+            {
+              "a": "{{1.subject}}",
+              "b": "[댓글수집]",
+              "o": "text:contain"
+            }
+          ]
+        ]
+      },
+      "mapper": {
+        "include": [
+          "attachment"
+        ],
+        "messageId": "{{1.id}}",
+        "returnAttachmentData": true
+      },
+      "metadata": {
+        "designer": {
+          "x": 284,
+          "y": 8
+        }
+      }
+    },
+    {
+      "id": 5,
+      "module": "csv:ParseCSV",
+      "version": 1,
+      "parameters": {
+        "relax": false,
+        "colCount": null,
+        "delimiter": ",",
+        "csvHeaders": "raw_row_id,post_id,comment_id,author,comment_text,published_at,like_count,reply_count",
+        "delimiterType": "other",
+        "csvContainsHeaders": true
+      },
+      "mapper": {
+        "csv": "{{toString(7.data)}}"
+      },
+      "metadata": {
+        "designer": {
+          "x": 572,
+          "y": 27
+        }
+      }
+    },
+    {
+      "id": 3,
+      "module": "google-sheets:addRow",
+      "version": 2,
+      "parameters": {
+        "__IMTCONN__": 0
+      },
+      "mapper": {
+        "from": "drive",
+        "mode": "select",
+        "values": {
+          "0": "{{5.col2}}",
+          "1": "{{5.col3}}",
+          "2": "{{5.col4}}",
+          "3": "{{5.col5}}",
+          "4": "{{5.col6}}",
+          "5": "{{5.col7}}",
+          "6": "{{5.col8}}"
+        },
+        "sheetId": "전체댓글",
+        "spreadsheetId": "REPLACE_WITH_YOUR_SPREADSHEET_ID",
+        "includesHeaders": true,
+        "insertDataOption": "INSERT_ROWS",
+        "useColumnHeaders": false,
+        "valueInputOption": "USER_ENTERED",
+        "insertUnformatted": false
+      },
+      "metadata": {
+        "designer": {
+          "x": 894,
+          "y": 32
+        }
+      }
+    },
+    {
+      "id": 8,
+      "module": "builtin:BasicRouter",
+      "version": 1,
+      "mapper": null,
+      "metadata": {
+        "designer": {
+          "x": 1194,
+          "y": 32
+        }
+      },
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": 10,
+              "module": "google-sheets:updateRow",
+              "version": 2,
+              "parameters": {
+                "__IMTCONN__": 0
+              },
+              "filter": {
+                "name": "주의댓글 추가",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "환불",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "신고",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "개인정보",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "고소",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "사기",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col7}}",
+                      "b": "20",
+                      "o": "number:greaterorequal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "from": "drive",
+                "mode": "select",
+                "values": {
+                  "0": "{{5.col2}}",
+                  "1": "{{5.col3}}",
+                  "2": "{{5.col4}}",
+                  "3": "{{5.col5}}",
+                  "4": "{{5.col6}}",
+                  "5": "{{5.col7}}",
+                  "6": "{{5.col8}}",
+                  "7": "주의"
+                },
+                "sheetId": "전체댓글",
+                "rowNumber": "{{3.rowNumber}}",
+                "spreadsheetId": "REPLACE_WITH_YOUR_SPREADSHEET_ID",
+                "includesHeaders": true,
+                "useColumnHeaders": false,
+                "valueInputOption": "USER_ENTERED"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1494,
+                  "y": -268
+                }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 14,
+              "module": "google-sheets:addRow",
+              "version": 2,
+              "parameters": {
+                "__IMTCONN__": 0
+              },
+              "filter": {
+                "name": "주의상태 업데이트",
+                "conditions": [
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "환불",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "신고",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "개인정보",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "고소",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col5}}",
+                      "b": "사기",
+                      "o": "text:contain"
+                    }
+                  ],
+                  [
+                    {
+                      "a": "{{5.col7}}",
+                      "b": "20",
+                      "o": "number:greaterorequal"
+                    }
+                  ]
+                ]
+              },
+              "mapper": {
+                "from": "drive",
+                "mode": "select",
+                "values": {
+                  "0": "{{5.col2}}",
+                  "1": "{{5.col3}}",
+                  "2": "{{5.col4}}",
+                  "3": "{{5.col5}}",
+                  "4": "{{5.col6}}",
+                  "5": "{{5.col7}}",
+                  "6": "{{5.col8}}",
+                  "7": "O",
+                  "8": "미확인"
+                },
+                "sheetId": "주의댓글",
+                "spreadsheetId": "REPLACE_WITH_YOUR_SPREADSHEET_ID",
+                "includesHeaders": true,
+                "insertDataOption": "INSERT_ROWS",
+                "useColumnHeaders": false,
+                "valueInputOption": "USER_ENTERED",
+                "insertUnformatted": false
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1625,
+                  "y": 16
+                }
+              }
+            },
+            {
+              "id": 15,
+              "module": "util:FunctionAggregator2",
+              "version": 1,
+              "parameters": {
+                "fn": "count",
+                "feeder": 5
+              },
+              "mapper": {
+                "value": "{{parseNumber(5.col7)}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2019,
+                  "y": 16
+                }
+              }
+            },
+            {
+              "id": 16,
+              "module": "util:SetVariable2",
+              "version": 1,
+              "parameters": {},
+              "mapper": {
+                "name": "warning_count",
+                "scope": "roundtrip",
+                "value": "{{15.result}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2465,
+                  "y": 13
+                }
+              }
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": 17,
+              "module": "util:FunctionAggregator2",
+              "version": 1,
+              "parameters": {
+                "fn": "count",
+                "feeder": 5
+              },
+              "filter": {
+                "name": "일일 요약 메일",
+                "conditions": []
+              },
+              "mapper": {
+                "value": "{{parseNumber(5.col7)}}"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 1495,
+                  "y": 455
+                }
+              }
+            },
+            {
+              "id": 18,
+              "module": "util:GetVariable2",
+              "version": 1,
+              "parameters": {},
+              "mapper": {
+                "name": "warning_count"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2011,
+                  "y": 461
+                }
+              }
+            },
+            {
+              "id": 19,
+              "module": "google-email:sendAnEmail",
+              "version": 4,
+              "parameters": {
+                "__IMTCONN__": 0
+              },
+              "mapper": {
+                "to": [
+                  "YOUR_EMAIL@example.com"
+                ],
+                "content": "금일 수집된 댓글은 총 {{17.result}}건이며, 이 중 주의댓글은 {{18.warning_count}}건입니다.\n<br><br>\n자세한 내용은 Google 스프레드시트 '댓글관리'의 '주의댓글' 시트를 확인해주세요.\n<br>\n<a href=\"https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit\">댓글관리 시트 바로가기</a>",
+                "subject": "[일일 요약 메일]",
+                "bodyType": "rawHtml"
+              },
+              "metadata": {
+                "designer": {
+                  "x": 2403,
+                  "y": 481
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "designer": {
+      "orphans": []
+    }
+  }
+}
